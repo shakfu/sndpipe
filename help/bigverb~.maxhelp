@@ -40,6 +40,88 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-20",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 441.000000000000227, 71.0, 50.0, 20.0 ],
+					"text" : "revlpf"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"format" : 6,
+					"id" : "obj-21",
+					"maxclass" : "flonum",
+					"maximum" : 10000.0,
+					"minimum" : 0.0,
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "bang" ],
+					"parameter_enable" : 1,
+					"patching_rect" : [ 441.000000000000227, 101.0, 59.0, 22.0 ],
+					"saved_attribute_attributes" : 					{
+						"valueof" : 						{
+							"parameter_initial" : [ 10000 ],
+							"parameter_initial_enable" : 1,
+							"parameter_invisible" : 1,
+							"parameter_longname" : "Reverb Long Pass Frequency",
+							"parameter_mmax" : 10000.0,
+							"parameter_shortname" : "revlpf",
+							"parameter_type" : 0,
+							"parameter_unitstyle" : 3
+						}
+
+					}
+,
+					"varname" : "revlpf"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-22",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 164.0, 66.0, 50.0, 20.0 ],
+					"text" : "revfb"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"format" : 6,
+					"id" : "obj-23",
+					"maxclass" : "flonum",
+					"maximum" : 1.0,
+					"minimum" : 0.0,
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "bang" ],
+					"parameter_enable" : 1,
+					"patching_rect" : [ 164.0, 96.0, 50.0, 22.0 ],
+					"saved_attribute_attributes" : 					{
+						"valueof" : 						{
+							"parameter_initial" : [ 0.97 ],
+							"parameter_initial_enable" : 1,
+							"parameter_invisible" : 1,
+							"parameter_longname" : "Reverb Feedback",
+							"parameter_mmax" : 1.0,
+							"parameter_shortname" : "revfb",
+							"parameter_type" : 0,
+							"parameter_unitstyle" : 1
+						}
+
+					}
+,
+					"varname" : "revfb"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"basictuning" : 440,
 					"data" : 					{
 						"clips" : [ 							{
@@ -88,7 +170,7 @@
 				"box" : 				{
 					"id" : "obj-1",
 					"maxclass" : "newobj",
-					"numinlets" : 2,
+					"numinlets" : 3,
 					"numoutlets" : 2,
 					"outlettype" : [ "signal", "signal" ],
 					"patching_rect" : [ 259.0, 205.0, 74.0, 22.0 ],
@@ -114,6 +196,20 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-1", 1 ],
+					"source" : [ "obj-21", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 0 ],
+					"source" : [ "obj-23", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 1 ],
 					"source" : [ "obj-4", 1 ]
 				}
 
@@ -126,6 +222,16 @@
 
 			}
  ],
+		"parameters" : 		{
+			"obj-21" : [ "Reverb Long Pass Frequency", "revlpf", 0 ],
+			"obj-23" : [ "Reverb Feedback", "revfb", 0 ],
+			"parameterbanks" : 			{
+
+			}
+,
+			"inherited_shortname" : 1
+		}
+,
 		"dependency_cache" : [ 			{
 				"name" : "cherokee.aif",
 				"bootpath" : "C74:/media/msp",

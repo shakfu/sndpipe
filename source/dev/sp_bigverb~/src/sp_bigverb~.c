@@ -63,8 +63,8 @@ void* bigverb_new(t_symbol* s, long argc, t_atom* argv)
 
         // parameters
         // get entry at object creation
-        float revfb = atom_getfloatarg(7, argc, argv);  // rev fb 
-        float revlpf = atom_getfloatarg(8, argc, argv); // rev flpf
+        float revfb = atom_getfloatarg(0, argc, argv);  // rev fb 
+        float revlpf = atom_getfloatarg(1, argc, argv); // rev flpf
 
         // module creation
         sp_create(&x->sp);
@@ -83,9 +83,7 @@ void* bigverb_new(t_symbol* s, long argc, t_atom* argv)
 
 void bigverb_free(t_bigverb* x) {
     dsp_free((t_pxobject *)x);
-
     sp_bigverb_destroy(&x->rev);
-
     sp_destroy(&x->sp);
 }
 
@@ -118,9 +116,6 @@ void bigverb_float(t_bigverb *x, double f)
             post("float received in 8th inlet (RevLpFreq)");
             x->rev->lpfreq = f;
             break;
-        default:
-            post("wrong inlet!!");
-            break;
     }
 }
 
@@ -138,10 +133,10 @@ void bigverb_perform64(t_bigverb* x, t_object* dsp64, double** ins,
                          long numins, double** outs, long numouts,
                          long sampleframes, long flags, void* userparam)
 {
-    t_double *inL = ins[0];   // we get audio for each inlet of the object from the **ins argument
-    t_double *inR = ins[1];   // we get audio for each inlet of the object from the **ins argument
-    t_double *outL = outs[0]; // we get audio for each outlet of the object from the **outs argument
-    t_double *outR = outs[1]; // we get audio for each outlet of the object from the **outs argument
+    t_double *inL = ins[0];
+    t_double *inR = ins[1];
+    t_double *outL = outs[0];
+    t_double *outR = outs[1];
 
     long n = sampleframes;
 
@@ -149,16 +144,14 @@ void bigverb_perform64(t_bigverb* x, t_object* dsp64, double** ins,
     t_float leftin = 0, leftout = 0, rightin = 0, rightout = 0;
 
     while (n--) {
-        // leftin = *inL;
-        t_float leftin = *inL++;
-        t_float rightin = *inR++;
+        
+        leftin = *inL++;
+        rightin = *inR++;
 
         sp_bigverb_compute(x->sp, x->rev, &leftin, &rightin, &leftout, &rightout);
 
         *outL++ = leftout;
         *outR++ = rightout;
 
-        // *outL++ = leftin;
-        // *outR++ = rightin;
     }
 }
