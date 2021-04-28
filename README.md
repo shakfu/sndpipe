@@ -15,7 +15,7 @@ git submodule update
 
 This project uses [Xcodegen](https://github.com/yonaskolb/XcodeGen) to generate an xcode project of a max or msp external from a yaml spec
 
-For convenience, `libsoundpipe.a` and `libsndfile.a` are already included. Please feel free to compile these separately.
+For convenience, `libsoundpipe.a` and `libsndfile.a` are included. Please feel free to compile these separately.
 
 After compilation, to install, just soft link or copy this folder to `$HOME/Documents/Max 8/Packages/sndpipe`
 
