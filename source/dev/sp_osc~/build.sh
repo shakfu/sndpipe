@@ -1,6 +1,5 @@
 PROJECT="sp_osc~"
 XCODEPROJ=${PROJECT}.xcodeproj
-HELPFILE=${PROJECT}.maxhelp
 
 if [[ -d ${XCODEPROJ} ]]
 then
@@ -8,8 +7,4 @@ then
 fi
 xcodegen
 xcodebuild -project ${XCODEPROJ}
-cp ${HELPFILE} ../../../help
-#cd ../../
-#make pkg
-
 

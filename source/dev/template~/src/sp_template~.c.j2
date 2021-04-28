@@ -26,10 +26,8 @@ void {{name}}_perform64(t_{{name}}* x, t_object* dsp64, double** ins,
                          long numins, double** outs, long numouts,
                          long sampleframes, long flags, void* userparam);
 
-
 // global class pointer variable
 static t_class* {{name}}_class = NULL;
-
 
 
 void ext_main(void* r)
@@ -53,8 +51,8 @@ void* {{name}}_new(t_symbol* s, long argc, t_atom* argv)
     t_{{name}}* x = (t_{{name}}*)object_alloc({{name}}_class);
 
     if (x) {
-        dsp_setup((t_pxobject*)x, 1); // i.e. 1 inlet + the default
-        outlet_new(x, "signal"); // signal outlet (note "signal" rather than NULL)
+        dsp_setup((t_pxobject*)x, {{params | count}}); // i.e. 1 inlet + the default
+        outlet_new(x, "signal"); // signal outlet
 
         // inlet proxy
         x->ob_proxy = proxy_new((t_object *)x, 1, &x->ob_in);
@@ -80,10 +78,9 @@ void* {{name}}_new(t_symbol* s, long argc, t_atom* argv)
     return (x);
 }
 
-
 void {{name}}_free(t_{{name}}* x) {
     dsp_free((t_pxobject *)x);
-    sp_{{name}}_destroy(&x->rev);
+    sp_{{name}}_destroy(&x->{{shortname}});
     sp_destroy(&x->sp);
 }
 
@@ -114,9 +111,9 @@ void {{name}}_float(t_{{name}} *x, double f)
             post("float received in {{loop.index0}}th inlet ({{param}})");
             x->{{shortname}}->{{param}} = f;
             break;
-        default:
-            error("{{name}}_float switch out-of-index");
         {% endfor %}
+        default:
+            error("{{name}}_float switch out-of-index");   
     }
 }
 
@@ -125,7 +122,7 @@ void {{name}}_float(t_{{name}} *x, double f)
 void {{name}}_dsp64(t_{{name}}* x, t_object* dsp64, short* count,
                      double samplerate, long maxvectorsize, long flags)
 {
-    post("my sample rate is: %f", samplerate);
+    //post("my sample rate is: %f", samplerate);
     object_method(dsp64, gensym("dsp_add64"), x, {{name}}_perform64, 0, NULL);
 }
 
@@ -137,13 +134,12 @@ void {{name}}_perform64(t_{{name}}* x, t_object* dsp64, double** ins,
     t_double* inL = ins[0];
     t_double* outL = outs[0];
     long n = sampleframes;
-    
-    float {{shortname}} = 0.0;
+
+    t_float {{shortname}}_in = 0, {{shortname}}_out = 0;
 
     while (n--) {
-        sp_{{name}}_compute(x->sp, x->{{shortname}}, NULL, &{{shortname}});
-
-        *outL++ = *inL++ + {{shortname}};
-
+        {{shortname}}_in = *inL++;
+        sp_{{name}}_compute(x->sp, x->{{shortname}}, &{{shortname}}_in, &{{shortname}}_out);
+        *outL++ = {{shortname}}_out;
     }
 }

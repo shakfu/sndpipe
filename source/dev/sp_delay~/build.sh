@@ -1,4 +1,4 @@
-PROJECT="sp_bigverb~"
+PROJECT="sp_delay~"
 XCODEPROJ=${PROJECT}.xcodeproj
 
 if [[ -d ${XCODEPROJ} ]]
@@ -7,5 +7,3 @@ then
 fi
 xcodegen
 xcodebuild -project ${XCODEPROJ}
-
-
