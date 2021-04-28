@@ -1,0 +1,149 @@
+#include "ext.h"
+#include "ext_obex.h"
+#include "z_dsp.h"
+#include "soundpipe.h"
+
+typedef struct _{{name}} {
+    t_pxobject ob;
+    long ob_in;
+    void *ob_proxy; 
+
+    // soundpipe-related
+    sp_data *sp;
+    sp_{{name}} *{{shortname}};
+
+} t_{{name}};
+
+
+// method prototypes
+void* {{name}}_new(t_symbol* s, long argc, t_atom* argv);
+void {{name}}_free(t_{{name}}* x);
+void {{name}}_assist(t_{{name}}* x, void* b, long m, long a, char* s);
+void {{name}}_float(t_{{name}}* x, double f);
+void {{name}}_dsp64(t_{{name}}* x, t_object* dsp64, short* count,
+                     double samplerate, long maxvectorsize, long flags);
+void {{name}}_perform64(t_{{name}}* x, t_object* dsp64, double** ins,
+                         long numins, double** outs, long numouts,
+                         long sampleframes, long flags, void* userparam);
+
+
+// global class pointer variable
+static t_class* {{name}}_class = NULL;
+
+
+
+void ext_main(void* r)
+{
+    t_class* c = class_new("sp_{{name}}~", (method){{name}}_new,
+                           (method){{name}}_free, (long)sizeof(t_{{name}}), 0L,
+                           A_GIMME, 0);
+
+    class_addmethod(c, (method){{name}}_float, "float", A_FLOAT, 0);
+    class_addmethod(c, (method){{name}}_dsp64, "dsp64", A_CANT, 0);
+    class_addmethod(c, (method){{name}}_assist, "assist", A_CANT, 0);
+
+    class_dspinit(c);
+    class_register(CLASS_BOX, c);
+    {{name}}_class = c;
+}
+
+
+void* {{name}}_new(t_symbol* s, long argc, t_atom* argv)
+{
+    t_{{name}}* x = (t_{{name}}*)object_alloc({{name}}_class);
+
+    if (x) {
+        dsp_setup((t_pxobject*)x, 1); // i.e. 1 inlet + the default
+        outlet_new(x, "signal"); // signal outlet (note "signal" rather than NULL)
+
+        // inlet proxy
+        x->ob_proxy = proxy_new((t_object *)x, 1, &x->ob_in);
+
+        // parameters
+        // as args at object creation
+
+        {% for param, type, default in params %}
+        {{type}} {{param}} = atom_get{{type}}arg({{loop.index0}}, argc, argv);
+        {% endfor %}
+
+        // module creation
+        sp_create(&x->sp);
+        sp_{{name}}_create(&x->{{shortname}});
+
+        // initialization
+        sp_{{name}}_init(x->sp, x->{{shortname}});
+
+        {% for param, type, default in params %}
+        x->{{shortname}}->{{param}} = {{param}} ? {{param}} : {{default}};
+        {% endfor %}
+    }
+    return (x);
+}
+
+
+void {{name}}_free(t_{{name}}* x) {
+    dsp_free((t_pxobject *)x);
+    sp_{{name}}_destroy(&x->rev);
+    sp_destroy(&x->sp);
+}
+
+void {{name}}_assist(t_{{name}} *x, void *b, long m, long a, char *s)
+{
+    if (m == ASSIST_OUTLET)
+        sprintf(s, "(Signal) output");
+    else
+    {
+        switch (a)
+        {
+        {% for param, type, default in params %}
+        case {{loop.index0}}:
+            sprintf(s, "(signal/{{type}}) inlet {{loop.index0}} ({{param}})");
+            break;
+        {% endfor %}
+        default:
+            error("{{name}}_assist switch out-of-index");
+        }
+    }
+}
+
+void {{name}}_float(t_{{name}} *x, double f)
+{
+    switch (proxy_getinlet((t_object *)x)) {
+        {% for param, type, default in params %}
+        case {{loop.index0}}:
+            post("float received in {{loop.index0}}th inlet ({{param}})");
+            x->{{shortname}}->{{param}} = f;
+            break;
+        default:
+            error("{{name}}_float switch out-of-index");
+        {% endfor %}
+    }
+}
+
+
+// registers a function for the signal chain in Max
+void {{name}}_dsp64(t_{{name}}* x, t_object* dsp64, short* count,
+                     double samplerate, long maxvectorsize, long flags)
+{
+    post("my sample rate is: %f", samplerate);
+    object_method(dsp64, gensym("dsp_add64"), x, {{name}}_perform64, 0, NULL);
+}
+
+
+void {{name}}_perform64(t_{{name}}* x, t_object* dsp64, double** ins,
+                         long numins, double** outs, long numouts,
+                         long sampleframes, long flags, void* userparam)
+{
+    t_double* inL = ins[0];
+    t_double* outL = outs[0];
+    long n = sampleframes;
+    
+    float {{shortname}} = 0.0;
+
+    while (n--) {
+        sp_{{name}}_compute(x->sp, x->{{shortname}}, NULL, &{{shortname}});
+
+        *outL++ = *inL++ + {{shortname}};
+
+    }
+}
