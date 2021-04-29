@@ -1,14 +1,41 @@
 #!/usr/bin/env python3
 """scripts/gen.py
 
-Should be run from `sndpipe/source/dev`
+The main function is `create_project`:
 
-```
-scripts/gen.py
-```
+
+    create_project(name='chorus', 
+        params=[
+            # param      type       initial value
+            ('time',     'float',   1.0),
+            ('feedback', 'float',   0.0),
+        ])
+
+
+The command-line interface to the above function,
+should be run from `sndpipe/source/dev`:
+
+    $ ./scripts/gen.py --help
+    usage: gen.py [-h] [--shortname SHORTNAME] [--param PARAM [PARAM ...]] name
+
+    Start a subproject.
+
+    positional arguments:
+    name                  name of external
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    --shortname SHORTNAME, -s SHORTNAME
+                            shortname of module
+    --param PARAM [PARAM ...], -p PARAM [PARAM ...]
+                            add a parameter triple (name, type, default)
+
+Please note that `--param` or `-p` can used several times to add as many
+params as required.
 
 """
 
+import argparse
 import termios
 import tty
 import sys
@@ -69,11 +96,34 @@ def create_project(name, shortname=None, params=None):
     print('done')
 
 
-if __name__ == '__main__':
+def commandline():
+    parser = argparse.ArgumentParser(description='Start a subproject.')
+    parser.add_argument('name', help='name of external')
+    parser.add_argument('--shortname', '-s', required=False,
+                        help='shortname of module')
+    parser.add_argument('--param', '-p', nargs='+', action='append',
+                        help = 'add a param (name, default) or (name, type, default)')
 
-    create_project(name='chorus', 
-        params=[
-            # param      type       initial value
-            ('time',     'float',   1.0),
-            ('feedback', 'float',   0.0),
-        ])
+    args = parser.parse_args()
+    # print(args)
+    name = args.name
+    shortname = args.shortname
+    types = dict(float=float, long=int)
+    params = []
+    for entry in args.param:
+        if len(entry) == 2:
+            if '.' in entry[1]:
+                params.append((entry[0], 'float', float(entry[1])))
+            else:
+                params.append((entry[0], 'long', int(entry[1])))
+        elif len(entry) == 3:
+            param, typ, initial_value = entry
+            params.append((param, typ, types[typ](initial_value)))
+        else:
+            print('skipping', entry)
+            print("can only process 2-element or 3-element params")
+            continue
+    create_project(name, shortname, params)
+
+
+if __name__ == '__main__': commandline()
