@@ -60,8 +60,8 @@ void* {{name}}_new(t_symbol* s, long argc, t_atom* argv)
         // parameters
         // as args at object creation
 
-        {% for param, type, default in params %}
-        {{type}} {{param}} = atom_get{{type}}arg({{loop.index0}}, argc, argv);
+        {% for p in params %}
+        {{p.type}} {{p.name}} = atom_get{{p.type}}arg({{loop.index0}}, argc, argv);
         {% endfor %}
 
         // module creation
@@ -71,8 +71,8 @@ void* {{name}}_new(t_symbol* s, long argc, t_atom* argv)
         // initialization
         sp_{{name}}_init(x->sp, x->{{shortname}});
 
-        {% for param, type, default in params %}
-        x->{{shortname}}->{{param}} = {{param}} ? {{param}} : {{default}};
+        {% for p in params %}
+        x->{{shortname}}->{{p.name}} = {{p.name}} ? {{p.name}} : {{p.value}};
         {% endfor %}
     }
     return (x);
@@ -92,9 +92,9 @@ void {{name}}_assist(t_{{name}} *x, void *b, long m, long a, char *s)
     {
         switch (a)
         {
-        {% for param, type, default in params %}
+        {% for p in params %}
         case {{loop.index0}}:
-            sprintf(s, "(signal/{{type}}) inlet {{loop.index0}} ({{param}})");
+            sprintf(s, "(signal/{{p.type}}) inlet {{loop.index0}} ({{p.name}})");
             break;
         {% endfor %}
         default:
@@ -106,10 +106,10 @@ void {{name}}_assist(t_{{name}} *x, void *b, long m, long a, char *s)
 void {{name}}_float(t_{{name}} *x, double f)
 {
     switch (proxy_getinlet((t_object *)x)) {
-        {% for param, type, default in params %}
+        {% for p in params %}
         case {{loop.index0}}:
-            post("float received in {{loop.index0}}th inlet ({{param}})");
-            x->{{shortname}}->{{param}} = f;
+            post("float received in {{loop.index0}}th inlet ({{p.name}})");
+            x->{{shortname}}->{{p.name}} = f;
             break;
         {% endfor %}
         default:

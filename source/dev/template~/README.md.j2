@@ -4,6 +4,6 @@ oneline description
 
 ## Parameters
 
-{% for param, type, default in params %}
--  {{type}} {{param}} : {{default}}
+{% for p in params %}
+-  {{p.type}} {{p.name}} : {{p.value}}
 {% endfor %}
