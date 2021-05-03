@@ -5,6 +5,9 @@ externals/*.mxo
 **/project.xcworkspace 
 **/xcshareddata
 .vscode/
+__pycache__/
+
+source/dev/tests/sporth
 
 # Prerequisites
 *.d
