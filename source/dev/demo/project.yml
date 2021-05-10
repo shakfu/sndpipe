@@ -1,0 +1,36 @@
+name: demo
+options:
+  bundleIdPrefix: org.me
+targets:
+  demo:
+    type: bundle
+    platform: macOS
+    deploymentTarget: "10.13"
+    sources:
+      - path: src/demo.c
+        buildPhase: sources
+      - path: ../include
+        buildPhase: headers
+        type: folder
+        headerVisibility: project
+    dependencies:
+      - sdk: CoreFoundation.framework
+    configFiles:
+      Debug: project.xcconfig
+      Release: project.xcconfig
+    settings:
+      CODE_SIGN_IDENTITY: "-"
+      DEVELOPMENT_TEAM: ""
+      GCC_OPTIMIZATION_LEVEL: 0
+      HEADER_SEARCH_PATHS:
+        - $(C74SUPPORT)/max-includes
+        - $(C74SUPPORT)/msp-includes
+        - $(C74SUPPORT)/jit-includes
+        - $(PROJECT_HEADERS)
+      INFOPLIST_FILE: $(SRCROOT)/../../Info.plist
+      LIBRARY_SEARCH_PATHS: $(PROJECT_LIBS)
+      OTHER_LDFLAGS:
+        - $(C74_SYM_LINKER_FLAGS)
+        - $(PROJECT_LDFLAGS)
+      PRODUCT_BUNDLE_IDENTIFIER: org.me.demo
+      PRODUCT_NAME: $(TARGET_NAME)

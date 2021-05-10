@@ -1,7 +1,7 @@
-"""py2max: a pure python script to generate .maxpat patcher files.
+"""py2max: a pure python library to generate .maxpat patcher files.
 
-Note: this is an older 'script' version. A more advanced version
-is available here: https://github.com/shakfu/py2max
+NOTE: this is a single 'script' version of py2max. A package version
+with additional features is available here: https://github.com/shakfu/py2max
 
 basic usage:
 
@@ -22,20 +22,24 @@ LAYOUT_DEFAULT_BOX_WIDTH = 66.0
 LAYOUT_DEFAULT_BOX_HEIGHT = 22.0
 
 
-class Box:
-    """Generic Max Box object"""
+class BaseBox:
+    """Base Max Box object"""
 
-    def __init__(self, id: str, maxclass: str,
-                 numinlets: int, numoutlets: int, outlettype: list[str],
-                 patching_rect: list[float], varname: str = None, **kwds):
+    def __init__(self, id: str, maxclass: str, numinlets: int, numoutlets: int,
+                 patching_rect: list[float], **kwds):
         self.id = id
         self.maxclass = maxclass
         self.numinlets = numinlets
         self.numoutlets = numoutlets
-        self.outlettype = outlettype
         self.patching_rect = patching_rect
-        self.varname = varname
         self._kwds = kwds
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(id={self.id}, maxclass={self.maxclass})'
+
+    @property
+    def oid(self) -> int:
+        return int(self.id[4:])
 
     def render(self):
         """convert python subobjects to dicts"""
@@ -50,35 +54,47 @@ class Box:
         return dict(box=d)
 
 
+class Box(BaseBox):
+    """Generic Max Box object"""
+
+    def __init__(self, id: str, maxclass: str,
+                 numinlets: int, numoutlets: int, outlettype: list[str],
+                 patching_rect: list[float], **kwds):
+        super().__init__(id, maxclass, numinlets, numoutlets, patching_rect, **kwds)
+        self.outlettype = outlettype
+
+
 class TextBox(Box):
     """Box with text"""
 
     def __init__(self, id: str, maxclass: str, text: str,
                  numinlets: int, numoutlets: int, outlettype: list[str],
-                 patching_rect: list[float], varname: str = None, **kwds):
+                 patching_rect: list[float], **kwds):
         super().__init__(id, maxclass, numinlets, numoutlets, outlettype,
-                         patching_rect, varname, **kwds)
+                         patching_rect, **kwds)
+        self.text = text
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(id={self.oid}, text={self.text})'
+
+
+class CommentBox(BaseBox):
+    """Comment object"""
+
+    def __init__(self, id: str,  text: str, patching_rect: list[float], **kwds):
+        super().__init__(id, 'comment', numinlets=1, numoutlets=0,
+                         patching_rect=patching_rect, **kwds)
         self.text = text
 
 
-class CommentBox(TextBox):
-    """Comment object"""
-
-    def __init__(self, id: str,  maxclass: str, text: str,
-                 numinlets: int, numoutlets: int, outlettype: list[str],
-                 patching_rect: list[float], varname: str = None, **kwds):
-        super().__init__(id, maxclass, text, numinlets, numoutlets, outlettype,
-                         patching_rect, varname, **kwds)
-
-
-class NumberBox(Box):       
+class NumberBox(Box):
     """Box with numbers"""
 
     def __init__(self, id: str,  maxclass: str,
                  numinlets: int, numoutlets: int, outlettype: list[str],
-                 patching_rect: list[float], varname: str = None, **kwds):
+                 patching_rect: list[float], **kwds):
         super().__init__(id, maxclass, numinlets, numoutlets, outlettype,
-                         patching_rect, varname, **kwds)
+                         patching_rect, **kwds)
         self.parameter_enable = 0
 
 
@@ -87,12 +103,12 @@ class FloatParam(NumberBox):
 
     def __init__(self, id: str,
                  numinlets: int, numoutlets: int, outlettype: list[str],
-                 patching_rect: list[float], 
+                 patching_rect: list[float],
                  parameter_longname: str, parameter_shortname: str,
                  parameter_initial: float = 0, maximum: float = 0, minimum: float = 0,
-                 varname: str = None, hint: str = None, **kwds):
+                 hint: str = None, **kwds):
         super().__init__(id, 'flonum', numinlets, numoutlets, outlettype,
-                         patching_rect, varname, **kwds)
+                         patching_rect, **kwds)
         self.parameter_enable = 1
         self.saved_attribute_attributes = dict(
             valueof=dict(
@@ -107,7 +123,6 @@ class FloatParam(NumberBox):
         self.maximum = maximum
         self.minimum = minimum
         self.hint = hint
-
 
 
 class IntParam(NumberBox):
@@ -118,9 +133,9 @@ class IntParam(NumberBox):
                  patching_rect: list[float],
                  parameter_longname: str, parameter_shortname: str,
                  parameter_initial: int = 0, maximum: int = 0, minimum: int = 0,
-                 varname: str = None, hint: str = None, **kwds):
+                 hint: str = None, **kwds):
         super().__init__(id, 'number', numinlets, numoutlets, outlettype,
-                         patching_rect, varname, **kwds)
+                         patching_rect, **kwds)
         self.parameter_enable = 1
         self.saved_attribute_attributes = dict(
             valueof=dict(
@@ -137,66 +152,75 @@ class IntParam(NumberBox):
         self.hint = hint
 
 
-
 class Patchline:
-    def __init__(self, src: str, src_outlet: int, dst: str, dst_inlet: int, order: int = 0):
-        self.source = [src, src_outlet]
-        self.destination = [dst, dst_inlet]
-        self.order = order
+    """A class for Max patchlines."""
+
+    def __init__(self, source: list, destination: list, **kwds):
+        self.source = source
+        self.destination = destination
+        self._kwds = kwds
 
     def to_tuple(self):
-        """return a tuple describing the patchline"""
-        return (self.source[0], self.source[1], 
-                self.destination[0], self.destination[1], 
-                self.order)
+        """Return a tuple describing the patchline."""
+        return (self.source[0], self.source[1],
+                self.destination[0], self.destination[1],
+                self._kwds.get('order', 0))
 
     def to_dict(self):
-        """create dict from object"""
+        """create dict from object."""
         return dict(patchline=vars(self))
 
+
 class PositionManager:
+    """Utility class to help with object position calculations."""
+
     def __init__(self, parent):
         self.parent = parent
         self.pad = LAYOUT_DEFAULT_PAD
         self.box_width = LAYOUT_DEFAULT_BOX_WIDTH
         self.box_height = LAYOUT_DEFAULT_BOX_HEIGHT
-    
+
     @property
     def patcher_rect(self):
+        """return rect coordinates of the parent patcher"""
         return self.parent.rect
 
     def above(self, rect):
+        """Return a position above the object"""
         x, y, w, h = rect
         return [x, y - self.box_height, w, h]
 
     def below(self, rect):
+        """Return a position below the object"""
         x, y, w, h = rect
         return [x, y + (self.box_height + h), w, h]
 
     def left(self, rect):
+        """Return a position left of the object"""
         x, y, w, h = rect
         return [x - self.box_width, y, w, h]
 
     def right(self, rect):
+        """Return a position right of the object"""
         x, y, w, h = rect
         return [x + (self.box_width + w), y, w, h]
 
 
-
 class Patcher:
-    """Build Max patchers from the ground up
-    
-    Top level Patcher can be converted to .maxpat file
+    """Core Patcher class describing a Max patchers from the ground up.
+
+    Any Patcher can be converted to a .maxpat file.
     """
 
-    def __init__(self, path=None, parent=None, classnamespace=None, 
+    def __init__(self, path=None, parent=None, classnamespace=None,
                  reset_on_render=True, auto_hints=False):
         self._path = path
         self._parent = parent
-        self._ids = []          # ids by order of creation
+        self._node_ids = []     # ids by order of creation
         self._objects = {}      # dict of objects by id
-        self._boxes = []        # store objects
+        self._boxes = []        # store child objects (boxes, etc.)
         self._lines = []        # store patchline objects
+        self._edge_ids = []     # store edge-ids by order of creation 
         self._id_counter = 0
         self._x_layout_counter = 0
         self._y_layout_counter = 0
@@ -250,27 +274,54 @@ class Patcher:
         self.dependency_cache = []
         self.autosave = 0
 
+    @classmethod
+    def from_file(cls, path, save_to: str = None):
+        """create a patcher instance from a .maxpat json file"""
+
+        with open(path) as f:
+            maxpat = json.load(f)
+
+        patcher = cls(path=save_to)
+        patcher.__dict__.update(maxpat['patcher'])
+
+        for box_dict in patcher.boxes:
+            box = box_dict['box']
+            b = BaseBox(**box)
+            patcher._boxes.append(b)
+
+        for line_dict in patcher.lines:
+            line = line_dict['patchline']
+            pl = Patchline(**line)
+            patcher._lines.append(pl)
+
     def to_dict(self):
         """create dict from object with extra kwds included"""
         d = vars(self).copy()
         to_del = [k for k in d if k.startswith('_')]
         for k in to_del:
             del d[k]
-        return dict(patcher=d)
+        if not self._parent:
+            return dict(patcher=d)
+        else:
+            return d
 
     def to_json(self):
+        """cascade convert to json"""
         self.render()
         return json.dumps(self.to_dict(), indent=4)
 
     @property
     def width(self):
+        """width of patcher window."""
         return self.rect[2]
 
     @property
     def height(self):
+        """height of patcher windows."""
         return self.rect[3]
 
     def render(self, reset=False):
+        """cascade convert py2max objects to dicts."""
         if reset or self._reset_on_render:
             self.boxes = []
             self.lines = []
@@ -280,26 +331,29 @@ class Patcher:
         self.lines = [line.to_dict() for line in self._lines]
 
     def saveas(self, path):
+        """save as .maxpat json file"""
         self.render()
         with open(path, 'w') as f:
             json.dump(self.to_dict(), f, indent=4)
 
     def save(self):
+        """save as json .maxpat file"""
         self.saveas(self._path)
 
     def get_id(self):
+        """helper func to increment object ids"""
         self._id_counter += 1
         return f'obj-{self._id_counter}'
- 
+
     def get_pos(self):
-        """rough auto-layout of objects"""
+        """helper func providing very rough auto-layout of objects"""
         pad = LAYOUT_DEFAULT_PAD  # 32.0
         x_pad = pad
         y_pad = pad
-        x_shift =   3 * pad * self._x_layout_counter
+        x_shift = 3 * pad * self._x_layout_counter
         y_shift = 1.5 * pad * self._y_layout_counter
         x = x_pad + x_shift
-        w = LAYOUT_DEFAULT_BOX_WIDTH  # 66.0
+        w = LAYOUT_DEFAULT_BOX_WIDTH   # 66.0
         h = LAYOUT_DEFAULT_BOX_HEIGHT  # 22.0
         self._x_layout_counter += 1
         if x + w + 2 * x_pad > self.width:
@@ -310,6 +364,7 @@ class Patcher:
 
     def get_link_order(self, src_id, dst_id):
         """get order of lines between the same pair of objects"""
+
         if ((src_id, dst_id) == self._last_link):
             self._link_counter += 1
         else:
@@ -319,7 +374,8 @@ class Patcher:
 
     def add_box(self, box, comment=None, comment_pos=None):
         """registers the box and adds it to the patcher"""
-        self._ids.append(box.id)
+
+        self._node_ids.append(box.id)
         self._objects[box.id] = box
         self._boxes.append(box)
         if comment:
@@ -328,7 +384,8 @@ class Patcher:
         return box
 
     def add_associated_comment(self, rect, comment, comment_pos=None):
-        """addd a comment associated with the object"""
+        """add a comment associated with the object"""
+
         if comment_pos:
             assert comment_pos in ['above', 'below', 'right', 'left']
             patching_rect = getattr(self._pos_mgr, comment_pos)(rect)
@@ -336,25 +393,36 @@ class Patcher:
             patching_rect = self._pos_mgr.above(rect)
         self.add_comment(comment, patching_rect)
 
-    def add_patchline_by_index(self, src_i: int, src_outlet, dst_i, dst_inlet):
-        src_id = self._ids[src_i]
-        dst_id = self._ids[dst_i]
+    def add_patchline_by_index(self, src_i, src_outlet, dst_i, dst_inlet):
+        """Patchline creation between two objects using stored indexes"""
+
+        src_id = self._node_ids[src_i]
+        dst_id = self._node_ids[dst_i]
         self.add_patchline(src_id, src_outlet, dst_id, dst_inlet)
 
     def add_patchline(self, src_id, src_outlet, dst_id, dst_inlet):
+        """primary patchline creation method"""
+
         order = self.get_link_order(src_id, dst_id)
-        patchline = Patchline(src_id, src_outlet, dst_id, dst_inlet, order)
+        src, dst = [src_id, src_outlet], [dst_id, dst_inlet]
+        patchline = Patchline(source=src, destination=dst, order=order)
         self._lines.append(patchline)
+        self._edge_ids.append((src_id, dst_id))
         return patchline
 
     def add_line(self, src_obj, dst_obj, outlet=0, inlet=0):
         """convenience line adding taking objects with default outlet to inlet"""
+
         return self.add_patchline(src_obj.id, outlet, dst_obj.id, inlet)
 
-    def add_textbox(self, text: str, maxclass: str = None, 
-                    numinlets: int = None, numoutlets: int = None, outlettype: list[str] = None, 
-                    patching_rect: list[float] = None, id: str = None, varname: str = None, 
+    def add_textbox(self, text: str, maxclass: str = None,
+                    numinlets: int = None, numoutlets: int = None, outlettype: list[str] = None,
+                    patching_rect: list[float] = None, id: str = None,
                     comment: str = None, comment_pos: str = None, **kwds):
+        """Add a generic textbox object to the patcher.
+
+        Looks up default attributes from a dictionary.
+        """
 
         return self.add_box(
             TextBox(
@@ -365,7 +433,101 @@ class Patcher:
                 numoutlets=numoutlets or 0,
                 outlettype=outlettype or [""],
                 patching_rect=patching_rect or self.get_pos(),
-                varname=varname,
+                **kwds
+            ),
+            comment,
+            comment_pos
+        )
+
+    def add_coll(self, name: str = None, dictionary: dict = None, embed: int = 1,
+                 patching_rect: list[float] = None, text: str = None, id: str = None,
+                 comment: str = None, comment_pos: str = None, **kwds):
+        """Add a coll object with option to pre-populate from a py dictionary."""
+        extra = {
+            'saved_object_attributes': {
+                'embed': embed,
+                'precision': 6
+            }
+        }
+        if dictionary:
+            extra['coll_data'] = {
+                'count': len(dictionary.keys()),
+                'data': [{'key': k, 'value': v} for k, v in dictionary.items()]
+            }
+        kwds.update(extra)
+        return self.add_box(
+            TextBox(
+                id=id or self.get_id(),
+                text=text or f"coll {name} @embed {embed}" if name else "coll @embed {embed}",
+                maxclass='newobj',
+                numinlets=1,
+                numoutlets=4,
+                outlettype=["", "", "", ""],
+                patching_rect=patching_rect or self.get_pos(),
+                **kwds
+            ),
+            comment,
+            comment_pos
+        )
+
+    def add_dict(self, name: str = None, dictionary: dict = None, embed: int = 1,
+                 patching_rect: list[float] = None, text: str = None, id: str = None,
+                 comment: str = None, comment_pos: str = None, **kwds):
+        """Add a dict object with option to pre-populate from a py dictionary."""
+        extra = {
+            'saved_object_attributes': {
+                'embed': embed,
+          		'parameter_enable': kwds.get('parameter_enable', 0),
+          		'parameter_mappable': kwds.get('parameter_mappable', 0)
+            },
+            'data': dictionary or {}
+        }
+        kwds.update(extra)
+        return self.add_box(
+            TextBox(
+                id=id or self.get_id(),
+                text=text or f"dict {name} @embed {embed}" if name else "dict @embed {embed}",
+                maxclass='newobj',
+                numinlets=2,
+                numoutlets=4,
+                outlettype=["dictionary", "", "", ""],
+                patching_rect=patching_rect or self.get_pos(),
+                **kwds
+            ),
+            comment,
+            comment_pos
+        )
+
+    def add_table(self, name: str = None, array: list[int] = None, embed: int = 1,
+                 patching_rect: list[float] = None, text: str = None, id: str = None,
+                 comment: str = None, comment_pos: str = None, **kwds):
+        """Add a table object with option to pre-populate from a py list."""
+        
+        extra = {
+            'embed': embed,
+            'saved_object_attributes': {
+                'name': name,
+          		'parameter_enable': kwds.get('parameter_enable', 0),
+          		'parameter_mappable': kwds.get('parameter_mappable', 0),
+                'range': kwds.get('range', 128),
+                'showeditor': 0,
+                'size': len(array) if array else 128,
+            },
+            # "showeditor": 0,
+            # 'size': kwds.get('size', 128),
+            'table_data': array or [],
+            'editor_rect': [100.0, 100.0, 300.0, 300.0],
+        }
+        kwds.update(extra)
+        return self.add_box(
+            TextBox(
+                id=id or self.get_id(),
+                text=text or f"table {name} @embed {embed}" if name else "table @embed {embed}",
+                maxclass='newobj',
+                numinlets=2,
+                numoutlets=2,
+                outlettype=["int", "bang"],
+                patching_rect=patching_rect or self.get_pos(),
                 **kwds
             ),
             comment,
@@ -373,18 +535,13 @@ class Patcher:
         )
 
     def add_comment(self, text: str, patching_rect: list[float] = None,
-                    id: str = None, varname: str = None, **kwds):
-
+                    id: str = None, **kwds):
+        """Add a basic comment object."""
         return self.add_box(
             CommentBox(
                 id=id or self.get_id(),
                 text=text,
-                maxclass="comment",
-                numinlets=1,
-                numoutlets=0,
-                outlettype=[""],
                 patching_rect=patching_rect or self.get_pos(),
-                varname=varname,
                 **kwds
             )
         )
@@ -392,7 +549,8 @@ class Patcher:
     def add_subpatcher(self, text: str, maxclass: str = None,
                        numinlets: int = None, numoutlets: int = None,
                        outlettype: list[str] = None, patching_rect: list[float] = None,
-                       id: str = None, varname: str = None, **kwds):
+                       id: str = None, patcher: 'Patcher' = None, **kwds):
+        """Add a subpatcher object."""
 
         return self.add_box(
             SubPatcher(
@@ -403,17 +561,23 @@ class Patcher:
                 numoutlets=numoutlets or 0,
                 outlettype=outlettype or [""],
                 patching_rect=patching_rect or self.get_pos(),
-                varname=varname,
-                patcher=Patcher(parent=self),
+                patcher=patcher or Patcher(parent=self),
                 **kwds
             )
         )
 
+    def add_gen(self, text: str = 'gen~',  **kwds):
+        """Add a gen~ object."""
+
+        return self.add_subpatcher(text,
+            patcher=Patcher(parent=self, classnamespace='gen.dsp'), **kwds)
+
     def _add_numberbox(self, maxclass: str, numinlets: int = None, numoutlets: int = None,
                        outlettype: list[str] = None, patching_rect: list[float] = None,
-                       id: str = None, varname: str = None, 
+                       id: str = None,
                        comment: str = None, comment_pos: str = None, **kwds):
-        
+        """Private helper function to create numeric objects."""
+
         return self.add_box(
             NumberBox(
                 id=id or self.get_id(),
@@ -422,7 +586,6 @@ class Patcher:
                 numoutlets=numoutlets or 2,
                 outlettype=outlettype or ["", "bang"],
                 patching_rect=patching_rect or self.get_pos(),
-                varname=varname,
                 **kwds
             ),
             comment,
@@ -431,16 +594,17 @@ class Patcher:
 
     def add_intbox(self, numinlets: int = None, numoutlets: int = None,
                    outlettype: list[str] = None, patching_rect: list[float] = None,
-                   id: str = None, varname: str = None, 
+                   id: str = None,
                    comment: str = None, comment_pos: str = None, **kwds):
-        
+        """Add an int box object."""
+
         return self._add_numberbox(
+            id=id,
             maxclass='number',
             numinlets=numinlets,
             numoutlets=numoutlets,
             outlettype=outlettype,
             patching_rect=patching_rect,
-            varname=varname,
             comment=comment,
             comment_pos=comment_pos,
             **kwds
@@ -448,26 +612,29 @@ class Patcher:
 
     def add_floatbox(self, numinlets: int = None, numoutlets: int = None,
                      outlettype: list[str] = None, patching_rect: list[float] = None,
-                     varname: str = None, comment: str = None, comment_pos: str = None, **kwds):
+                     id: str = None,
+                     comment: str = None, comment_pos: str = None, **kwds):
+        """Add an float box object."""
 
         return self._add_numberbox(
+            id=id,
             maxclass='flonum',
             numinlets=numinlets,
             numoutlets=numoutlets,
             outlettype=outlettype,
             patching_rect=patching_rect,
-            varname=varname,
             comment=comment,
             comment_pos=comment_pos,
             **kwds
         )
-    
-    def add_floatparam(self, longname: str, initial: float = None, 
-                       minimum: float = None, maximum: float = None, shortname: str = None,                       
+
+    def add_floatparam(self, longname: str, initial: float = None,
+                       minimum: float = None, maximum: float = None, shortname: str = None,
                        numinlets: int = None, numoutlets: int = None, outlettype: list[str] = None,
-                       id: str = None, rect: list[float] = None, varname: str = None, hint: str = None,
+                       id: str = None, rect: list[float] = None, hint: str = None,
                        comment: str = None, comment_pos: str = None, **kwds):
-        
+        """Add a float parameter object."""
+
         return self.add_box(
             FloatParam(
                 id=id or self.get_id(),
@@ -480,7 +647,6 @@ class Patcher:
                 maximum=maximum or 1.0,
                 minimum=minimum or 0.0,
                 patching_rect=rect or self.get_pos(),
-                varname=varname or longname,
                 hint=hint or (longname if self._auto_hints else ""),
                 **kwds
             ),
@@ -491,8 +657,9 @@ class Patcher:
     def add_intparam(self, longname: str, initial: int = None,
                      minimum: int = None, maximum: int = None, shortname: str = None,
                      numinlets: int = None, numoutlets: int = None, outlettype: list[str] = None,
-                     id: str = None, rect: list[float] = None, varname: str = None, hint: str = None,
+                     id: str = None, rect: list[float] = None, hint: str = None,
                      comment: str = None, comment_pos: str = None, **kwds):
+        """Add an int parameter object."""
 
         return self.add_box(
             IntParam(
@@ -506,17 +673,13 @@ class Patcher:
                 maximum=maximum or 10,
                 minimum=minimum or 0,
                 patching_rect=rect or self.get_pos(),
-                varname=varname or longname,
                 hint=hint or (longname if self._auto_hints else ""),
                 **kwds
             ),
-            comment,
+            comment or longname,
             comment_pos
         )
 
-# id: str, maxclass: str, text: str,
-# numinlets: int, numoutlets: int, outlettype: list[str],
-# patching_rect: list[float], varname: str = None, **kwds
 
 class SubPatcher(TextBox):
     """Subpatcher textbox subclass"""
@@ -524,110 +687,21 @@ class SubPatcher(TextBox):
     def __init__(self, id: str, maxclass: str,
                  numinlets: int, numoutlets: int, outlettype: list[str],
                  patching_rect: list[float], text: str, patcher: Patcher = None,
-                 varname: str = None, **kwds):
+                 **kwds):
         super().__init__(id, maxclass, text, numinlets, numoutlets, outlettype,
-                         patching_rect, varname, **kwds)
+                         patching_rect, **kwds)
         self._patcher = patcher
 
     def render(self):
+        """convert self and children to dictionary."""
         self._patcher.render()
         self.patcher = self._patcher.to_dict()
-    
+
     @property
     def subpatcher(self):
         return self._patcher
 
-
-def test_colors():
-    p = Patcher('out.maxpat')
-    for i in range(54):
-        m = i/54.
-        p.add_textbox('cycle~ 400', bgcolor=[1.0-m, 0.32, 0.0+m, 0.5])
-    p.save()
-
-def test_basic():
-    p = Patcher('out.maxpat')
-    osc1 = p.add_textbox('cycle~ 440')
-    gain = p.add_textbox('gain~')
-    dac = p.add_textbox('ezdac~')
-    p.add_line(osc1, gain)
-    p.add_line(gain, dac)
-    p.save()
-
-def test_subpatch():
-    p = Patcher('out.maxpat')
-    sbox = p.add_subpatcher('p mysub')
-    sp = sbox.subpatcher
-    i = sp.add_textbox('inlet')
-    g = sp.add_textbox('gain~')
-    o = sp.add_textbox('outlet')
-    osc = p.add_textbox('cycle~ 440')
-    dac = p.add_textbox('ezdac~')
-    sp.add_line(i, g)
-    sp.add_line(g, o)
-    p.add_line(osc, sbox)
-    p.add_line(sbox, dac)
-    p.save()
-
-def test_param():
-    p = Patcher('out.maxpat')
-    freq = p.add_floatparam('frequency1', 230, 0, 1000)
-    size = p.add_intparam('size', 341, 0, 1000)
-    p.save()
-
-def test_comment():
-    p = Patcher('out.maxpat')
-    osc1 = p.add_textbox('cycle~ 440', comment="sine osc")
-    fparam = p.add_floatparam('Frequency', 10.2, 0.0, 20.0)
-    p.save()
-
-def test_mix_two_sinusoids():
-    p = Patcher('out.maxpat')
-    
-    # objects
-    freq1 = p.add_floatparam('frequency1', 230, 0, 1000)
-    freq2 = p.add_floatparam('frequency2', 341, 0, 1000)
-    phase = p.add_floatbox()
-    osc1 = p.add_textbox('cycle~')
-    osc2 = p.add_textbox('cycle~')
-    amp1 = p.add_floatbox()
-    amp2 = p.add_floatbox()
-    mul1 = p.add_textbox('*~')
-    mul2 = p.add_textbox('*~')
-    add1 = p.add_textbox('+~')
-    dac = p.add_textbox('ezdac~')
-    scop = p.add_textbox('scope~')
-    scp1 = p.add_intbox()
-    scp2 = p.add_intbox()
-
-    # lines
-    p.add_line(freq1, osc1)
-    p.add_line(osc1, mul1)
-    p.add_line(mul1, add1)
-    p.add_line(amp1, mul1, inlet=1)
-    p.add_line(freq2, osc2)
-    p.add_line(phase, osc2, inlet=1)
-    p.add_line(osc2, mul2)
-    p.add_line(amp2, mul2, inlet=1)
-    p.add_line(mul2, add1, inlet=1)
-    p.add_line(add1, dac)
-    p.add_line(add1, dac, inlet=1)
-    p.add_line(add1, scop)
-    p.add_line(scp1, scop)
-    p.add_line(scp2, scop, inlet=1)
-    p.save()
-
-def test_maxdb():
-    p = Patcher('out.maxpat')
-    fg = p.add_textbox('filtergraph~')
-    scop = p.add_textbox('scope~')
-    p.save()
-
 if __name__ == '__main__':
-    # test_colors()
-    # test_basic()
-    test_subpatch()
-    # test_param()
-    # test_mix_two_sinusoids()
-    # test_comment()
-    # test_maxdb()
+    p = Patcher('demo.maxpat')
+    p.add_floatparam('sa', 100.0, 0.0, 200.0, comment='FREQ')
+    p.save()

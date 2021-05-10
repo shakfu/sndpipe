@@ -20,6 +20,7 @@ void* {{name}}_new(t_symbol* s, long argc, t_atom* argv);
 void {{name}}_free(t_{{name}}* x);
 void {{name}}_assist(t_{{name}}* x, void* b, long m, long a, char* s);
 void {{name}}_float(t_{{name}}* x, double f);
+void {{name}}_long(t_{{name}} *x, long l);
 void {{name}}_dsp64(t_{{name}}* x, t_object* dsp64, short* count,
                      double samplerate, long maxvectorsize, long flags);
 void {{name}}_perform64(t_{{name}}* x, t_object* dsp64, double** ins,
@@ -57,9 +58,7 @@ void* {{name}}_new(t_symbol* s, long argc, t_atom* argv)
         // inlet proxy
         x->ob_proxy = proxy_new((t_object *)x, 1, &x->ob_in);
 
-        // parameters
-        // as args at object creation
-
+        // parameters as args at object creation
         {% for p in params %}
         {{p.type}} {{p.name}} = atom_get{{p.type}}arg({{loop.index0}}, argc, argv);
         {% endfor %}
@@ -107,13 +106,31 @@ void {{name}}_float(t_{{name}} *x, double f)
 {
     switch (proxy_getinlet((t_object *)x)) {
         {% for p in params %}
-        case {{loop.index0}}:
-            post("float received in {{loop.index0}}th inlet ({{p.name}})");
+        {% if p.type == 'float' %}
+        case {{p.inlet}}:
+            post("float received in {{p.inlet}}th inlet ({{p.name}})");
             x->{{shortname}}->{{p.name}} = f;
             break;
+        {% endif %}
         {% endfor %}
         default:
             error("{{name}}_float switch out-of-index");   
+    }
+}
+
+void {{name}}_long(t_{{name}} *x, long l)
+{
+    switch (proxy_getinlet((t_object *)x)) {
+        {% for p in params %}
+        {% if p.type in ['int', 'long']%}
+        case {{p.inlet}}:
+            post("long received in {{p.inlet}}th inlet ({{p.name}})");
+            x->{{shortname}}->{{p.name}} = l;
+            break;
+        {% endif %}
+        {% endfor %}
+        default:
+            error("{{name}}_long switch out-of-index");   
     }
 }
 

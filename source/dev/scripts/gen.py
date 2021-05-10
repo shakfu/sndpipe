@@ -45,6 +45,8 @@ from typing import Optional, Union
 
 from jinja2 import Environment, FileSystemLoader
 
+from py2max import Patcher
+
 TEMPLATE_DIR = os.path.join(os.getcwd(), 'template~')
 assert os.path.exists(TEMPLATE_DIR), "Must be run from dev directory"
 
@@ -58,8 +60,9 @@ class Param:
     value: Union[float, int]
     min: Union[float, int] = 0.0
     max: Union[float, int] = 1.0
+    inlet: int = 0
 
-class Project:
+class ProjectGen:
     """Generates soundpipe module-based MSP external project4"""
 
     template_paths = [
@@ -86,6 +89,20 @@ class Project:
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
+    
+    def create_maxhelp(self, project_path):
+        patcher = Patcher(project_path / f'sp_{self.name}~-py2max.maxhelp')
+        ext = patcher.add_textbox(f'sp_{self.name}~', numinlets=len(self.params), numoutlets=1)
+        for i, p in enumerate(self.params):
+            if p.type == 'float':
+                fp = patcher.add_floatparam(
+                    p.name, p.value, p.min, p.max, comment=p.name)
+                patcher.add_line(fp, ext, inlet=i)
+            if p.type in ['int', 'long']:
+                ip = patcher.add_intparam(
+                    p.name, p.value, p.min, p.max, comment=p.name)
+                patcher.add_line(ip, ext, inlet=i)
+        patcher.save()
 
     def create(self):
         """create project structure"""
@@ -93,6 +110,7 @@ class Project:
         if not project.exists():
             project.mkdir()
             (project / 'src').mkdir()
+        self.create_maxhelp(project)
         for path in self.template_paths:
             if 'sp_template~' in path:
                 target = project / path.replace('template', self.name).strip('.j2')
@@ -110,6 +128,7 @@ class Project:
                 continue
             else:
                 target.write_text(rendered)
+        os.chmod(project / 'build.sh', 0o775)
 
 
     @classmethod
@@ -122,28 +141,28 @@ class Project:
                             help = 'add a param (name, default) or (name, type, default)')
 
         args = parser.parse_args()
-        print(args)
+        # print(args)
         name = args.name
         shortname = args.shortname
         params = []
-        for entry in args.param:
+        for i, entry in enumerate(args.param):
             if len(entry) == 2:
                 # (name, initial)
                 param, initial = entry
                 if '.' in initial:
-                    p = Param(name=param, type='float', value=float(initial))
+                    p = Param(name=param, type='float', value=float(initial), inlet=i)
                 else:
-                    p = Param(name=param, type='long', value=int(initial), min=0, max=100)
+                    p = Param(name=param, type='long', value=int(initial), min=0, max=100, inlet=i)
                 params.append(p)
             elif len(entry) == 4:
                 # (name, initial, min, max)
                 param, initial, min, max = entry
                 if '.' in initial:
                     p = Param(name=param, type='float', value=float(initial),
-                            min=float(min), max=float(max))
+                            min=float(min), max=float(max), inlet=i)
                 else:
                     p = Param(name=param, type='long', value=int(initial),
-                            min=int(min), max=int(max))
+                            min=int(min), max=int(max), inlet=i)
                 params.append(p)
             else:
                 print('skipping', entry)
@@ -153,4 +172,4 @@ class Project:
 
 
 if __name__ == '__main__': 
-    Project.commandline()
+    ProjectGen.commandline()
