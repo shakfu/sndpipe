@@ -1,0 +1,358 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 51;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		15D869F5F49FDBF5D2DDD5F1 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86FB37810759129C34BED33C /* CoreFoundation.framework */; };
+		42212BD59F6C6F820B4EB5A6 /* libsndfile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05A0503979BD06CD3A0D86A8 /* libsndfile.a */; };
+		5ACF7C3834E9D597AC57F47C /* sp_smoothdelay~.c in Sources */ = {isa = PBXBuildFile; fileRef = 8771262272363DB2CC66AEFE /* sp_smoothdelay~.c */; };
+		F3C4CEAEA8BDD19FCC5A15F7 /* libsoundpipe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 21A016B681C0EEBFC5175C17 /* libsoundpipe.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		05A0503979BD06CD3A0D86A8 /* libsndfile.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsndfile.a; path = ../lib/libsndfile.a; sourceTree = "<group>"; };
+		21A016B681C0EEBFC5175C17 /* libsoundpipe.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsoundpipe.a; path = ../lib/libsoundpipe.a; sourceTree = "<group>"; };
+		794EEA044B7A34D3AA093CAE /* sp_smoothdelay~.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "sp_smoothdelay~.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		811E6254B98F104A7FE52FEE /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../include; sourceTree = SOURCE_ROOT; };
+		86FB37810759129C34BED33C /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		8771262272363DB2CC66AEFE /* sp_smoothdelay~.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sp_smoothdelay~.c"; sourceTree = "<group>"; };
+		D19BBF996E53E39CCA7D745F /* project.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = project.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C91F73C9A5E4EC02FE464D2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				15D869F5F49FDBF5D2DDD5F1 /* CoreFoundation.framework in Frameworks */,
+				42212BD59F6C6F820B4EB5A6 /* libsndfile.a in Frameworks */,
+				F3C4CEAEA8BDD19FCC5A15F7 /* libsoundpipe.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4D351A43BB6C35250708737E /* sp_smoothdelay~ */ = {
+			isa = PBXGroup;
+			children = (
+				D19BBF996E53E39CCA7D745F /* project.xcconfig */,
+			);
+			name = "sp_smoothdelay~";
+			path = .;
+			sourceTree = "<group>";
+		};
+		85ED3746B45D1892858F1672 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				8771262272363DB2CC66AEFE /* sp_smoothdelay~.c */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		9E91CAF21576B57836CA65F3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				86FB37810759129C34BED33C /* CoreFoundation.framework */,
+				05A0503979BD06CD3A0D86A8 /* libsndfile.a */,
+				21A016B681C0EEBFC5175C17 /* libsoundpipe.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E3668F156EF3E6482470C396 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				794EEA044B7A34D3AA093CAE /* sp_smoothdelay~.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FA52CFF00275FFE2FD800CD4 = {
+			isa = PBXGroup;
+			children = (
+				811E6254B98F104A7FE52FEE /* include */,
+				4D351A43BB6C35250708737E /* sp_smoothdelay~ */,
+				85ED3746B45D1892858F1672 /* src */,
+				9E91CAF21576B57836CA65F3 /* Frameworks */,
+				E3668F156EF3E6482470C396 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FF6C0C0BD9836E0BF6ECD5DA /* sp_smoothdelay~ */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DACCAF077E8209584B95D4B6 /* Build configuration list for PBXNativeTarget "sp_smoothdelay~" */;
+			buildPhases = (
+				32D3C46A47C190A9831314AB /* Sources */,
+				C91F73C9A5E4EC02FE464D2D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "sp_smoothdelay~";
+			productName = "sp_smoothdelay~";
+			productReference = 794EEA044B7A34D3AA093CAE /* sp_smoothdelay~.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E3C0ABBC645B92A5B74A99EF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1200;
+				TargetAttributes = {
+					FF6C0C0BD9836E0BF6ECD5DA = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = D8F9D208A247C1DB26725739 /* Build configuration list for PBXProject "sp_smoothdelay~" */;
+			compatibilityVersion = "Xcode 10.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = FA52CFF00275FFE2FD800CD4;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FF6C0C0BD9836E0BF6ECD5DA /* sp_smoothdelay~ */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		32D3C46A47C190A9831314AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5ACF7C3834E9D597AC57F47C /* sp_smoothdelay~.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		00D5707BD061ABEA4FA5C657 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		16A73B73EE1208509AD5C481 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D19BBF996E53E39CCA7D745F /* project.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"../lib\"",
+				);
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					"$(C74SUPPORT)/max-includes",
+					"$(C74SUPPORT)/msp-includes",
+					"$(C74SUPPORT)/jit-includes",
+					"$(PROJECT_HEADERS)",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/../../Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_LIBS)";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = (
+					"$(C74_SYM_LINKER_FLAGS)",
+					"$(PROJECT_LDFLAGS)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.me.smoothdelay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		4B0BABB192219CC295C50D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AF3B612215E7400AD3C6A2B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D19BBF996E53E39CCA7D745F /* project.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"../lib\"",
+				);
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					"$(C74SUPPORT)/max-includes",
+					"$(C74SUPPORT)/msp-includes",
+					"$(C74SUPPORT)/jit-includes",
+					"$(PROJECT_HEADERS)",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/../../Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_LIBS)";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = (
+					"$(C74_SYM_LINKER_FLAGS)",
+					"$(PROJECT_LDFLAGS)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.me.smoothdelay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D8F9D208A247C1DB26725739 /* Build configuration list for PBXProject "sp_smoothdelay~" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B0BABB192219CC295C50D58 /* Debug */,
+				00D5707BD061ABEA4FA5C657 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DACCAF077E8209584B95D4B6 /* Build configuration list for PBXNativeTarget "sp_smoothdelay~" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				16A73B73EE1208509AD5C481 /* Debug */,
+				AF3B612215E7400AD3C6A2B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E3C0ABBC645B92A5B74A99EF /* Project object */;
+}

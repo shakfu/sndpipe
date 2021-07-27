@@ -48,7 +48,7 @@ from jinja2 import Environment, FileSystemLoader
 from py2max import Patcher
 
 TEMPLATE_DIR = os.path.join(os.getcwd(), 'template~')
-assert os.path.exists(TEMPLATE_DIR), "Must be run from dev directory"
+assert os.path.exists(TEMPLATE_DIR), "gen.py bust be run from dev directory"
 
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
@@ -70,13 +70,14 @@ class ProjectGen:
             'project.yml.j2',
             'project.xcconfig.j2',
             'build.sh.j2',
-            'sp_template~.maxhelp.j2',
+            # 'sp_template~.maxhelp.j2',
             'README.md.j2',
         ]
 
     def __init__(self, name, shortname=None, params=None):
         self.name = name
         self.shortname = shortname or name
+        self.fullname = f'sp_{self.name}~'
         self.params = params or []
 
     def getch(self, txt):
@@ -91,8 +92,10 @@ class ProjectGen:
         return ch
     
     def create_maxhelp(self, project_path):
-        patcher = Patcher(project_path / f'sp_{self.name}~-py2max.maxhelp')
-        ext = patcher.add_textbox(f'sp_{self.name}~', numinlets=len(self.params), numoutlets=1)
+        patcher = Patcher(project_path / f'{self.fullname}.maxhelp')
+        patcher.add_comment(text=self.fullname, fontsize=24.0, 
+            patching_rect=[30., 30., 280., 33.])
+        ext = patcher.add_textbox(self.fullname, numinlets=len(self.params), numoutlets=1)
         for i, p in enumerate(self.params):
             if p.type == 'float':
                 fp = patcher.add_floatparam(
@@ -106,7 +109,7 @@ class ProjectGen:
 
     def create(self):
         """create project structure"""
-        project = Path(f"sp_{self.name}~")
+        project = Path(self.fullname)
         if not project.exists():
             project.mkdir()
             (project / 'src').mkdir()
@@ -118,7 +121,8 @@ class ProjectGen:
                 target = project / path.strip('.j2')
             template = env.get_template(path)
             rendered = template.render(
-                name=self.name, shortname=self.shortname, params=self.params)
+                name=self.name, shortname=self.shortname, fullname=self.fullname, 
+                params=self.params, num_inlets=len(self.params)-1)
             if target.exists():
                 answer = self.getch(f"\n overwrite '{target}' (y/n/q)?")
                 if answer == 'y':
@@ -129,6 +133,8 @@ class ProjectGen:
             else:
                 target.write_text(rendered)
         os.chmod(project / 'build.sh', 0o775)
+        print()
+        print(f"project sp_{self.fullname} created.")
 
 
     @classmethod
@@ -138,7 +144,7 @@ class ProjectGen:
         parser.add_argument('--shortname', '-s', required=False,
                             help='shortname of module')
         parser.add_argument('--param', '-p', nargs='+', action='append',
-                            help = 'add a param (name, default) or (name, type, default)')
+                            help="add a param: '-p name default min max' OR '-p name type default min max'")
 
         args = parser.parse_args()
         # print(args)
@@ -146,15 +152,7 @@ class ProjectGen:
         shortname = args.shortname
         params = []
         for i, entry in enumerate(args.param):
-            if len(entry) == 2:
-                # (name, initial)
-                param, initial = entry
-                if '.' in initial:
-                    p = Param(name=param, type='float', value=float(initial), inlet=i)
-                else:
-                    p = Param(name=param, type='long', value=int(initial), min=0, max=100, inlet=i)
-                params.append(p)
-            elif len(entry) == 4:
+            if len(entry) == 4:
                 # (name, initial, min, max)
                 param, initial, min, max = entry
                 if '.' in initial:
@@ -164,10 +162,23 @@ class ProjectGen:
                     p = Param(name=param, type='long', value=int(initial),
                             min=int(min), max=int(max), inlet=i)
                 params.append(p)
+
+            elif len(entry) == 5:
+                # (name, type, initial, min, max)
+                param, typ, initial, min, max = entry
+                if typ == 'float':
+                    p = Param(name=param, type=typ, value=float(initial),
+                              min=float(min), max=float(max), inlet=i)
+                else:
+                    p = Param(name=param, type='long', value=int(initial),
+                              min=int(min), max=int(max), inlet=i)
+                params.append(p)
+
             else:
                 print('skipping', entry)
-                print("can only process 2-element or 4-element params")
+                print("can only process 4-element or 5-element params")
                 continue
+
         cls(name, shortname, params).create()
 
 

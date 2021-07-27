@@ -3,7 +3,6 @@
 oneline description
 
 ## Parameters
-
 {% for p in params %}
--  {{p.type}} {{p.name}} : {{p.value}}
+- {{p.name}} ({{p.type}}) -- default: {{p.value}}, min: {{p.min}},  max: {{p.max}}
 {% endfor %}

@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-
-PROJECT="sp_{{name}}~"
+PROJECT="sp_smoothdelay~"
 XCODEPROJ=${PROJECT}.xcodeproj
 
 if [[ -d ${XCODEPROJ} ]]

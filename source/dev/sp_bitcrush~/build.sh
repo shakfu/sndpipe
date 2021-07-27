@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT="sp_{{name}}~"
+PROJECT="sp_bitcrush~"
 XCODEPROJ=${PROJECT}.xcodeproj
 
 if [[ -d ${XCODEPROJ} ]]
