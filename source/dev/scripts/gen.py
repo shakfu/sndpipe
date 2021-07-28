@@ -134,7 +134,7 @@ class ProjectGen:
                 target.write_text(rendered)
         os.chmod(project / 'build.sh', 0o775)
         print()
-        print(f"project sp_{self.fullname} created.")
+        print(f"project {self.fullname} created.")
 
 
     @classmethod

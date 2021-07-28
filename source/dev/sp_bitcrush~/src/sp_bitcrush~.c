@@ -60,16 +60,9 @@ void* bitcrush_new(t_symbol* s, long argc, t_atom* argv)
         x->ob_proxy = proxy_new((t_object *)x, 1, &x->ob_in);
 
         // parameters as args at object creation
-        
-        
         long bitdepth = atom_getintarg(0, argc, argv);
-        
-        
-        
         float srate = atom_getfloatarg(1, argc, argv);
         
-        
-
         // module creation
         sp_create(&x->sp);
         sp_bitcrush_create(&x->bitcrush);
@@ -77,9 +70,7 @@ void* bitcrush_new(t_symbol* s, long argc, t_atom* argv)
         // initialization
         sp_bitcrush_init(x->sp, x->bitcrush);
 
-        
-        x->bitcrush->bitdepth = bitdepth ? bitdepth : 8;
-        
+        x->bitcrush->bitdepth = bitdepth ? bitdepth : 8;        
         x->bitcrush->srate = srate ? srate : 1000.0;
         
     }
@@ -119,15 +110,11 @@ void bitcrush_float(t_bitcrush *x, double f)
 {
     switch (proxy_getinlet((t_object *)x)) {
         
-        
-        
-        
         case 1:
             post("float received in 1th inlet (srate)");
             x->bitcrush->srate = f;
             break;
-        
-        
+
         default:
             error("bitcrush_float switch out-of-index");   
     }
@@ -142,21 +129,16 @@ void bitcrush_int(t_bitcrush *x, long l)
             post("long received in 0th inlet (bitdepth)");
             x->bitcrush->bitdepth = l;
             break;
-        
-        
-        
-        
+
         default:
             error("bitcrush_long switch out-of-index");   
     }
 }
 
 
-// registers a function for the signal chain in Max
 void bitcrush_dsp64(t_bitcrush* x, t_object* dsp64, short* count,
                      double samplerate, long maxvectorsize, long flags)
 {
-    //post("my sample rate is: %f", samplerate);
     object_method(dsp64, gensym("dsp_add64"), x, bitcrush_perform64, 0, NULL);
 }
 

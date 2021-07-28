@@ -86,6 +86,7 @@ void {{name}}_free(t_{{name}}* x) {
     dsp_free((t_pxobject *)x);
     sp_{{name}}_destroy(&x->{{shortname}});
     sp_destroy(&x->sp);
+    proxy_delete(x->ob_proxy);
 }
 
 void {{name}}_assist(t_{{name}} *x, void *b, long m, long a, char *s)

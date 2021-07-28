@@ -27,9 +27,9 @@ After compilation, to install, just soft link or copy this folder to `$HOME/Docu
 
 - **sp_brown~**: Brownian noise generator.
 
-- **sp_osc**~: A simple clear-sonding delay.
+- **sp_delay~**: A simple clear-sonding delay.
 
-- **sp_osc**~: A simple oscillator sin and triangle.
+- **sp_osc~**: A simple oscillator with sine and triangle waveforms.
 
 - **sp_pshift~**: A pitch-shifter effect.
 
@@ -37,6 +37,7 @@ After compilation, to install, just soft link or copy this folder to `$HOME/Docu
 
 ## Externals under-development (NOT YET WORKING)
 
+- **compressor~**: a basic compressor.
 - **smoothdelay~**: Smooth variable delay line without varispeed pitch.
 
 ## Development
@@ -59,7 +60,15 @@ So let's generate the subproject skeleton:
 ```bash
 cd sndpipe/source/dev
 ./scripts/gen.py bitcrush -p bitdepth int 8 1 16 -p srate float 1000.0
+```
 
+The new subproject will be generated in the `dev` folder as `sp_bitcrush~`.
+
+To build it:
+
+```bash
+cd sp_bitcrush~
+./build.sh
 ```
 
 ## Credits
